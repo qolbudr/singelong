@@ -36,6 +36,11 @@
         "command": "singelong.accessToken",
         "title": "Get Access Token",
         "category": "SingeLong"
+      },
+      {
+        "command": "singelong.logout",
+        "title": "Logout",
+        "category": "SingeLong"
       }
     ]
   },
@@ -59,6 +64,8 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "axios": "^1.7.7"
+    "@types/express": "^4.17.21",
+    "axios": "^1.7.7",
+    "express": "^4.19.2"
   }
 }
