@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        :root {
+            --bg-color: background-color: #7f5a83;
+            background-image: linear-gradient(315deg, #7f5a83 0%, #0d324d 74%);
+            --menu-color: #00000045;
+            --lyrics-color: white;
+            --font-family: "Montserrat", sans-serif;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            overflow: hidden;
+            background: var(--bg-color);
+        }
+
+        #music-player {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-color);
+            color: white;
+        }
+
+        #lyrics-content {
+            overflow-y: scroll;
+            scroll-behavior: smooth;
+            height: 80vh;
+            text-align: left;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            padding: 0 2rem 0 2rem;
+        }
+
+        #lyrics-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .text-dark {
+            opacity: 0.2;
+        }
+
+        .text-light {
+            opacity: 1;
+            font-size: 2em;
+        }
+
+        h2 {
+            margin-bottom: 0.1em;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="music-player">
+        <div id="lyrics">
+            <div id="lyrics-content">
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function extractAndConvertToMilliseconds(text) {
+            // Cari pola waktu dalam format [MM:SS.MS] di dalam teks
+            const timePattern = /\[(\d{2}):(\d{2})\.(\d{2})\]/;
+            const match = text.match(timePattern);
+
+            if (match) {
+                const [, minutes, seconds, milliseconds] = match;
+
+                // Konversi waktu ke milidetik
+                const minutesToMilliseconds = parseInt(minutes, 10) * 60 * 1000;
+                const secondsToMilliseconds = parseInt(seconds, 10) * 1000;
+                const millisecondsValue = parseInt(milliseconds, 10);
+
+                // Hitung total milidetik
+                const totalMilliseconds = minutesToMilliseconds + secondsToMilliseconds + millisecondsValue;
+
+                return totalMilliseconds;
+            } else {
+                throw new Error('Format waktu tidak valid.');
+            }
+        }
+
+        const lyrics = `[ti:Numb (英雄联盟代表音乐)]
+[ar:Linkin Park]
+[al:Meteora]
+[by:]
+[offset:0]
+[00:00.00]Numb - Linkin Park (林肯公园)
+[00:11.09]Written by：Linkin Park
+[00:22.19]I&apos;m tired of being what you want me to be
+[00:25.15]
+[00:25.87]Feeling so faithless lost under the surface
+[00:30.64]Don&apos;t know what you&apos;re expecting of me
+[00:34.38]Put under the pressure of walking in your shoes
+[00:39.66]Caught in the undertow
+[00:40.94]Just caught in the undertow
+[00:42.83]Every step that I take is another mistake to you
+[00:48.44]Caught in the undertow
+[00:49.55]Just caught in the undertow
+[00:52.23]I&apos;ve become so numb I can&apos;t feel you there
+[00:57.23]Become so tired so much more aware
+[01:01.51]I&apos;m becoming this all I want to do
+[01:05.83]Is be more like me and be less like you
+[01:10.01]Can&apos;t you see that you&apos;re smothering me
+[01:13.22]
+[01:13.97]Holding too tightly afraid to lose control
+[01:18.56]&apos;Cause everything that you thought I would be
+[01:22.41]Has fallen apart right in front of you
+[01:27.61]Caught in the undertow
+[01:29.00]Just caught in the undertow
+[01:30.73]Every step that I take is another mistake to you
+[01:36.24]Caught in the undertow
+[01:37.64]Just caught in the undertow
+[01:39.37]And every second I waste is more than I can take
+[01:44.21]I&apos;ve become so numb I can&apos;t feel you there
+[01:49.81]Become so tired so much more aware
+[01:53.73]I&apos;m becoming this all I want to do
+[01:58.01]Is be more like me and be less like you
+[02:02.92]
+[02:03.42]And I know I may end up failing too
+[02:11.99]But I know you were just like me
+[02:16.44]With someone disappointed in you
+[02:21.59]I&apos;ve become so numb I can&apos;t feel you there
+[02:26.83]Become so tired so much more aware
+[02:30.92]I&apos;m becoming this all I want to do
+[02:35.09]Is be more like me and be less like you
+[02:39.15]I&apos;ve become so numb I can&apos;t feel you there
+[02:43.98]I&apos;m tired of being what you want me to be
+[02:47.61]I&apos;ve become so numb I can&apos;t feel you there
+[02:52.59]I&apos;m tired of being what you want me to be
+        `
+
+        let cleaned = []
+        const array = lyrics.split("\n")
+
+
+        array.forEach((items) => {
+            const found = items.match(/(\[[0-9])\w+/g)
+            if (found) cleaned.push(items);
+        })
+
+        let contents = ''
+
+        cleaned.forEach((items) => {
+            const id = extractAndConvertToMilliseconds(items)
+            const lyric = items.split(']')[1];
+            contents += '<h2 id=' + id + ' class="text-dark">' + lyric + '</h2>'
+        })
+
+        document.getElementById('lyrics-content').innerHTML = contents;
+
+        let milliseconds = 0;
+
+        let autoscroll = setInterval(() => {
+            let index = 0;
+            let found = 0;
+
+            cleaned.forEach((items) => {
+                if (index < cleaned.length - 1) {
+                    const targetMillisecond = extractAndConvertToMilliseconds(cleaned[index])
+                    const nextMillisecond = extractAndConvertToMilliseconds(cleaned[index + 1])
+
+                    if (milliseconds >= targetMillisecond && milliseconds < nextMillisecond) {
+                        found = targetMillisecond;
+                    }
+                    index++;
+                }
+            })
+
+            console.log(found);
+
+            const foundId = '#' + found + '';
+
+            window.location.href = foundId;
+            document.getElementById('' + found + '').classList.remove('text-dark')
+            document.getElementById('' + found + '').classList.add('text-light')
+
+            milliseconds += 50
+        }, 50)
+
+    </script>
+</body>
+
+</html>
