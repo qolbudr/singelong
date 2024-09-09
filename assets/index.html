@@ -50,11 +50,11 @@
 
         .text-light {
             opacity: 1;
-            font-size: 2em;
         }
 
         h2 {
             margin: 10px;
+            font-size: 2em;
         }
     </style>
 </head>
@@ -103,7 +103,7 @@
 
             cleaned.forEach((items) => {
                 const id = extractAndConvertToMilliseconds(items)
-                const lyric = items.split(']')[1];
+                const lyric = items.split(']')[1].trim();
                 contents += '<h2 id=' + id + ' class="text-dark">' + lyric + '</h2>'
             })
 
@@ -119,8 +119,7 @@
                 }
             })
 
-            const foundId = '#' + found + '';
-            window.location.href = foundId;
+            document.getElementById('lyrics-content').scrollTo({top: document.getElementById(found).offsetTop - (document.getElementById('lyrics-content').clientHeight / 2)})
         }
 
 
