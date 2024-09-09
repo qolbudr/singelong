@@ -39,8 +39,6 @@ export function activate(context: vscode.ExtensionContext) {
 		} else {
 			const token = await requestAccessToken()
 
-			console.log(token)
-
 			const response = await axios.get('https://api.spotify.com/v1/me/player', {
 				headers: {
 					'Authorization': `Bearer ${token}`
@@ -97,7 +95,6 @@ const requestAccessToken = async (): Promise<string> => {
 	const accessToken = extensionContext.globalState.get<string>("access_token");
 	const refreshToken = extensionContext.globalState.get<string>("refresh_token");
 
-
 	if ((timestamp >= expiredIn) && refreshToken != null) {
 		const response = await axios.post(
 			'https://accounts.spotify.com/api/token', `client_id=${clientId}&grant_type=refresh_token&refresh_token=${refreshToken}`,
@@ -112,8 +109,8 @@ const requestAccessToken = async (): Promise<string> => {
 		const data = response.data;
 
 		extensionContext.globalState.update("access_token", data.access_token);
-		extensionContext.globalState.update("expired_in", Date.now() + (data.expired_in * 1000));
-		extensionContext.globalState.update("refresh_token", data.refresh_token);
+		extensionContext.globalState.update("expired_in", Date.now() + (data.expires_in * 1000));
+		extensionContext.globalState.update("refresh_token", data.refresh_token || refreshToken);
 
 		return data.access_token;
 	} else {
@@ -131,8 +128,8 @@ const requestAccessToken = async (): Promise<string> => {
 			const data = response.data;
 
 			extensionContext.globalState.update("access_token", data.access_token);
-			extensionContext.globalState.update("expired_in", Date.now() + (data.expired_in * 1000));
-			extensionContext.globalState.update("refresh_token", data.refresh_token);
+			extensionContext.globalState.update("expired_in", Date.now() + (data.expires_in * 1000));
+			extensionContext.globalState.update("refresh_token", data.refresh_token || refreshToken);
 
 			return data.access_token;
 		}
