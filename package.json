@@ -26,15 +26,15 @@
         {
           "type": "webview",
           "id": "singelong.openview",
-          "name": "Lyrics",
+          "name": "",
           "contextualTitle": "SingeLong"
         }
       ]
     },
     "commands": [
       {
-        "command": "singelong.accessToken",
-        "title": "Get Access Token",
+        "command": "singelong.authorize",
+        "title": "Authorize",
         "category": "SingeLong"
       },
       {

@@ -1,167 +1,125 @@
 import * as vscode from 'vscode';
 import fs from 'node:fs';
-import axios from 'axios';
 import express, { Request, Response } from "express";
+import { SingeLongViewProvider } from './panel/panel';
+import * as spotify from './utils/spotify';
+import * as lyric from './utils/lyric';
+import { Auth } from './types/auth';
+import { Playing } from './types/playing';
 
-const clientId = "1c846f4c175040149c24404af17bd78a";
-const redirectUri = "http://localhost:9878/callback";
 let extensionContext: vscode.ExtensionContext;
-let provider: CustomSidebarViewProvider;
+let provider: SingeLongViewProvider;
+let extensionUri: vscode.Uri;
 
 export function activate(context: vscode.ExtensionContext) {
+	// making private context accessed globally;
 	extensionContext = context;
+	provider = new SingeLongViewProvider(context.extensionUri);
+	extensionUri = context.extensionUri;
 
-	console.log('Congratulations, your extension "SingeLong" is now active!');
+	// define authorize command in vscode
+	let login = vscode.commands.registerCommand('singelong.authorize', () => authorize());
+	context.subscriptions.push(login);
 
-	provider = new CustomSidebarViewProvider(context.extensionUri);
-	const extensionUri = context.extensionUri;
+	// define logout command in vscode
+	let logout = vscode.commands.registerCommand('singelong.logout', () => signOut());
+	context.subscriptions.push(logout);
 
-	(async () => {
-		let accessToken = vscode.commands.registerCommand('singelong.accessToken', () => authorize(extensionUri));
-		context.subscriptions.push(accessToken);
+	// creating panel
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider(
+			SingeLongViewProvider.viewType,
+			provider
+		)
+	);
 
-		let logout = vscode.commands.registerCommand('singelong.logout', () => signOut());
-		context.subscriptions.push(logout);
-
-		context.subscriptions.push(
-			vscode.window.registerWebviewViewProvider(
-				CustomSidebarViewProvider.viewType,
-				provider
-			)
-		);
-	})();
-
-	setInterval(async () => {
-		const token = extensionContext.globalState.get<string>("access_token");
-
-		if (token == null) {
-			provider.view?.webview.postMessage({ 'command': 'getToken' })
-		} else {
-			const token = await requestAccessToken()
-
-			const response = await axios.get('https://api.spotify.com/v1/me/player', {
-				headers: {
-					'Authorization': `Bearer ${token}`
-				}
-			})
-
-			const data = response.data;
-
-			const responseLyrics = await axios.get(`https://lyrics-api.qolbudr.workers.dev/?artist=${data.item.artists[0].name}&name=${data.item.name}`)
-
-			const dataLyrics = responseLyrics.data;
-
-			provider.view?.webview.postMessage({
-				'command': 'updatePlayer',
-				'content': {
-					'lyrics': dataLyrics,
-					'milliseconds': data.progress_ms
-				}
-			})
-		}
-	}, 500)
+	// listen updates
+	setInterval(listener, 500)
 }
 
-const authorize = async (_extensionUri: vscode.Uri) => {
+const authorize = async () => {
+	// start local webserver callback
 	const app = express();
 
 	app.get("/callback", async (req: Request, res: Response) => {
-		const contentUri = vscode.Uri.joinPath(_extensionUri, "assets", "close.html")
+		const contentUri = vscode.Uri.joinPath(extensionUri, "assets", "close.html")
 		const content = fs.readFileSync(contentUri.fsPath, 'utf-8');
 		const code = req.query.code
 
 		extensionContext.globalState.update("code", code);
 		await requestAccessToken();
 
-		vscode.window.showInformationMessage('SingeLong: Access token has been granted');
+		vscode.window.showInformationMessage('SingeLong: Spotify authorized successfully');
 		res.send(content);
 	});
 
 	app.listen(9878);
-	vscode.env.openExternal(vscode.Uri.parse(`https://accounts.spotify.com/en/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=user-read-playback-state`));
+
+	// open url to retrive spotify authorization code
+	spotify.getAuthorizationCode();
 }
 
-const signOut = async () => {
-	extensionContext.globalState.update("access_token", null);
-	extensionContext.globalState.update("expired_in", null);
-	extensionContext.globalState.update("code", null);
-	extensionContext.globalState.update("refresh_token", null);
-}
+const signOut = async () => extensionContext.globalState.update("auth", null);
 
-const requestAccessToken = async (): Promise<string> => {
-	const code = extensionContext.globalState.get<string>("code");
+const requestAccessToken = async (): Promise<Auth> => {
 	const timestamp = Date.now();
-	const expiredIn = extensionContext.globalState.get<number>("expired_in") || 0;
-	const accessToken = extensionContext.globalState.get<string>("access_token");
-	const refreshToken = extensionContext.globalState.get<string>("refresh_token");
+	const auth = extensionContext.globalState.get<Auth>("auth");
+	const code = extensionContext.globalState.get<string>("code");
 
-	if ((timestamp >= expiredIn) && refreshToken != null) {
-		const response = await axios.post(
-			'https://accounts.spotify.com/api/token', `client_id=${clientId}&grant_type=refresh_token&refresh_token=${refreshToken}`,
-			{
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-					"Authorization": "Basic MWM4NDZmNGMxNzUwNDAxNDljMjQ0MDRhZjE3YmQ3OGE6Y2UxYTNjMjVhOGRkNDNhM2E3MzQ2NGIwN2VjZjA4ZTI=",
-				},
-			}
-		)
+	const expiredIn = auth?.expiredIn || 0;
+	const refreshToken = auth?.refreshToken;
+	const isTokenExpired = (timestamp >= expiredIn) && refreshToken != null;
+	const isTokenExist = (auth?.accessToken != null);
 
-		const data = response.data;
+	if (isTokenExpired) {
+		const data = await spotify.refreshToken(refreshToken)
+		if (data.exception) provider.view?.webview.postMessage({ 'command': 'error', 'message': data.exception.message });
+		extensionContext.globalState.update("auth", data);
+		return data;
+	}
 
-		extensionContext.globalState.update("access_token", data.access_token);
-		extensionContext.globalState.update("expired_in", Date.now() + (data.expires_in * 1000));
-		extensionContext.globalState.update("refresh_token", data.refresh_token || refreshToken);
+	if (!isTokenExist) {
+		const data = await spotify.getToken(code || '');
+		if (data.exception) provider.view?.webview.postMessage({ 'command': 'error', 'message': data.exception.message });
+		extensionContext.globalState.update("auth", data);
+		return data;
+	}
+	
+	extensionContext.globalState.update("auth", auth);
+	return auth;
+}
 
-		return data.access_token;
-	} else {
-		if (accessToken == null) {
-			const response = await axios.post(
-				'https://accounts.spotify.com/api/token', `client_id=${clientId}&grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}`,
-				{
-					headers: {
-						"Content-Type": "application/x-www-form-urlencoded",
-						"Authorization": "Basic MWM4NDZmNGMxNzUwNDAxNDljMjQ0MDRhZjE3YmQ3OGE6Y2UxYTNjMjVhOGRkNDNhM2E3MzQ2NGIwN2VjZjA4ZTI=",
-					},
-				}
-			)
+const listener = async () => {
+	let auth = extensionContext.globalState.get<Auth>('auth');
+	const isTokenExist = (auth?.accessToken != null);
 
-			const data = response.data;
+	if (!isTokenExist) {
+		provider.view?.webview.postMessage({ 'command': 'error', 'message': 'spotify account is\'nt authorized yet' });
+		return;
+	}
 
-			extensionContext.globalState.update("access_token", data.access_token);
-			extensionContext.globalState.update("expired_in", Date.now() + (data.expires_in * 1000));
-			extensionContext.globalState.update("refresh_token", data.refresh_token || refreshToken);
+	if (isTokenExist) {
+		auth = await requestAccessToken()
+		let lyricData;
+		const playing = await spotify.getNowPlaying(auth.accessToken!);
+		const playingState = extensionContext.globalState.get<Playing>('playing');
+		const lyricState = extensionContext.globalState.get<string>('lyric');
 
-			return data.access_token;
+		const hasRetrieveLyric = (playingState?.id == playing.id && lyricState != null)
+
+		if (!hasRetrieveLyric) {
+			const lyricData = await lyric.getLyric(playing);
+			extensionContext.globalState.update('lyric', lyricData);
 		}
 
-		return accessToken;
-	}
-}
-
-class CustomSidebarViewProvider implements vscode.WebviewViewProvider {
-	public static readonly viewType = "singelong.openview";
-	public view?: vscode.WebviewView;
-	constructor(private readonly _extensionUri: vscode.Uri) { }
-
-	resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext<unknown>, token: vscode.CancellationToken): void | Thenable<void> {
-		this.view = webviewView;
-
-		webviewView.webview.options = {
-			// Allow scripts in the webview
-			enableScripts: true,
-			localResourceRoots: [this._extensionUri],
-		};
-
-		const contentUri = webviewView.webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "assets", "index.html")
-		);
-
-		webviewView.webview.html = this.getHtmlContent(contentUri);
-	}
-
-	private getHtmlContent(contentUri: vscode.Uri): string {
-		const content = fs.readFileSync(contentUri.fsPath, 'utf-8');
-		return content;
+		extensionContext.globalState.update('playing', playing);
+		provider.view?.webview.postMessage({
+			'command': 'updatePlayer',
+			'content': {
+				'lyrics': lyricData || lyricState,
+				'milliseconds': playing.currentProgress
+			}
+		})
 	}
 }
 
