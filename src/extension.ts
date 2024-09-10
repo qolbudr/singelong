@@ -84,7 +84,7 @@ const requestAccessToken = async (): Promise<Auth> => {
 		extensionContext.globalState.update("auth", data);
 		return data;
 	}
-	
+
 	extensionContext.globalState.update("auth", auth);
 	return auth;
 }
@@ -101,22 +101,34 @@ const listener = async () => {
 	if (isTokenExist) {
 		auth = await requestAccessToken()
 		let lyricData;
+		let lyricCoolDown = extensionContext.globalState.get<number>('cooldown') || 0;
 		const playing = await spotify.getNowPlaying(auth.accessToken!);
 		const playingState = extensionContext.globalState.get<Playing>('playing');
 		const lyricState = extensionContext.globalState.get<string>('lyric');
+		const timestamp = Date.now();
+
+		if (playing.exception) {
+			return provider.view?.webview.postMessage({ 'command': 'error', 'message': playing.exception.message });
+		}
 
 		const hasRetrieveLyric = (playingState?.id == playing.id && lyricState != null)
 
-		if (!hasRetrieveLyric) {
-			const lyricData = await lyric.getLyric(playing);
-			extensionContext.globalState.update('lyric', lyricData);
+		if (!hasRetrieveLyric && timestamp >= lyricCoolDown) {
+			lyricData = await lyric.getLyric(playing);
+
+			if (lyricData.exception) {
+				return provider.view?.webview.postMessage({ 'command': 'error', 'message': lyricData.exception.message });
+			}
+
+			extensionContext.globalState.update('lyric', lyricData.lyric || '');
+			extensionContext.globalState.update('cooldown', Date.now() + 5000);
 		}
 
 		extensionContext.globalState.update('playing', playing);
 		provider.view?.webview.postMessage({
 			'command': 'updatePlayer',
 			'content': {
-				'lyrics': lyricData || lyricState,
+				'lyrics': lyricData?.lyric || lyricState,
 				'milliseconds': playing.currentProgress
 			}
 		})
