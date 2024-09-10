@@ -65,7 +65,7 @@ const getNowPlaying = async (token: string): Promise<Playing> => {
         const data = response.data;
 
         if (data.item.artists.length == 0) return { exception: { code: 404, message: 'Failed to fetch artist name' } }
-        return { id: data.item.id, artistName: data.item.artists[0].name, songTitle: data.item.name, currentProgress: data.progress_ms }
+        return { id: data.item.id, artistName: data.item.artists[0].name, songTitle: data.item.name, currentProgress: data.progress_ms, albumName: data.item.album.name }
     } catch (e) {
         return { exception: { code: 404, message: 'Spotify not playing any song' } }
     }
