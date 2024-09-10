@@ -34,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	// listen updates
-	setInterval(listener, 500)
+	setInterval(listener, 1000)
 }
 
 const authorize = async () => {
@@ -114,6 +114,7 @@ const listener = async () => {
 		const hasRetrieveLyric = (playingState?.id == playing.id && lyricState != null)
 
 		if (!hasRetrieveLyric && timestamp >= lyricCoolDown) {
+			extensionContext.globalState.update('cooldown', Date.now() + 5000);
 			lyricData = await lyric.getLyric(playing);
 
 			if (lyricData.exception) {
@@ -121,7 +122,6 @@ const listener = async () => {
 			}
 
 			extensionContext.globalState.update('lyric', lyricData.lyric || '');
-			extensionContext.globalState.update('cooldown', Date.now() + 5000);
 		}
 
 		extensionContext.globalState.update('playing', playing);
