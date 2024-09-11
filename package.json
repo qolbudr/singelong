@@ -24,19 +24,18 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "custom-activitybar",
+          "id": "singelong-activitybar",
           "title": "SingeLong",
-          "icon": "assets/images/logo_bito.svg"
+          "icon": "assets/images/icon-logo.svg"
         }
       ]
     },
     "views": {
-      "custom-activitybar": [
+      "singelong-activitybar": [
         {
           "type": "webview",
           "id": "singelong.openview",
-          "name": "SingeLong",
-          "contextualTitle": "Lyrics"
+          "name": "SingeLong"
         }
       ]
     },
