@@ -1,8 +1,8 @@
 {
   "name": "singelong",
   "displayName": "SingeLong",
-  "description": "",
-  "version": "0.0.1",
+  "description": "VSCode extension to singelong (read: sing along) played music connected with your spotify",
+  "version": "1.0.0",
   "engines": {
     "vscode": "1.78.1"
   },
@@ -11,13 +11,22 @@
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qolbudr/singelong"
+  },
+  "icon": "assets/images/icon.png",
+  "__metadata": {
+    "publisherDisplayName": "Qolbu Dzikru"
+  },
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
           "id": "custom-activitybar",
           "title": "SingeLong",
-          "icon": "assets/logo_bito.svg"
+          "icon": "assets/images/logo_bito.svg"
         }
       ]
     },
@@ -26,7 +35,8 @@
         {
           "type": "webview",
           "id": "singelong.openview",
-          "name": "SingeLong"
+          "name": "SingeLong",
+          "contextualTitle": "Lyrics"
         }
       ]
     },

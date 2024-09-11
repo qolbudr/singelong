@@ -1,71 +1,37 @@
-# singelong README
-
-This is the README for your extension "singelong". After writing up a brief description, we recommend including the following sections.
-
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+<div align="center">
+    <img src="./assets/images/icon.png" width="128"  style="display: block; margin: 0 auto"/>
+    <h1>SingeLong</h1>
+    <p>VSCode extension to singelong (read: sing along) played music connected with your spotify</p>
+</div>
 
 ---
 
-## Following extension guidelines
+<p align="center">
+  <img src="./misc/screenshots/1.jpg" width="30%" />
+  <img src="./misc/screenshots/2.jpg" width="30%" />
+  <img src="./misc/screenshots/3.jpg" width="30%" />
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+  <img src="./misc/screenshots/4.jpg" width="30%" />
+  <img src="./misc/screenshots/5.jpg" width="30%" />
+  <img src="./misc/screenshots/6.jpg" width="30%" />
+</p>
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+## Features
+- Autosync lyric for (almost) any song
+- Spotify account synchronize
+- Dynamic background (coming soon)
 
-## Working with Markdown
+## Installation
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+[<img src="https://raw.githubusercontent.com/NeoApplications/Neo-Backup/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
+    alt="Get it on GitHub"
+    height="80">](https://github.com/qolbudr/singelong/releases/latest)
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+## Acknowledgments
+- [**VaniconStudio**](https://www.vecteezy.com/vector-art/8265106-song-lyrics-icon-outline-icon-and-solid-icon): Premium hand-crafted icons built by Remix.
 
-## For more information
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+## Disclaimer
+This project and its contents are not affiliated with, funded, authorized, endorsed by, or in any way associated with Spotify or any of its affiliates and subsidiaries.
 
-**Enjoy!**
+\*For educational purpose only
