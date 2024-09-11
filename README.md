@@ -28,7 +28,7 @@
     height="80">](https://github.com/qolbudr/singelong/releases/latest)
 
 ## Acknowledgments
-- [**VaniconStudio**](https://www.vecteezy.com/vector-art/8265106-song-lyrics-icon-outline-icon-and-solid-icon): Premium hand-crafted icons built by Remix.
+- [**VaniconStudio**](https://www.vecteezy.com/vector-art/8265106-song-lyrics-icon-outline-icon-and-solid-icon): Linear Icon.
 
 
 ## Disclaimer
