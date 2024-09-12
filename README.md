@@ -28,7 +28,8 @@
     height="80">](https://github.com/qolbudr/singelong/releases/latest)
 
 ## Acknowledgments
-- [**VaniconStudio**](https://www.vecteezy.com/vector-art/8265106-song-lyrics-icon-outline-icon-and-solid-icon): Linear Icon.
+- [**MusixMatch**](https://www.musixmatch.com): The World's Largest Lyrics Catalog.
+- [**Xinqiao Wang**](https://music.xianqiao.wang): Xinqiao Wang Music Player.
 
 
 ## Disclaimer
