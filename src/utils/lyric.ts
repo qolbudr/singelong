@@ -29,7 +29,7 @@ export const getLyric = async (playing: Playing): Promise<Lyric> => {
         if (subtitleList.length > 0) {
             if (subtitleList[0].subtitle.subtitle_body) {
                 console.log("LYRICS FROM MUSIXMATCH");
-                return { lyric: subtitleList[0].subtitle.subtitle_body }
+                return { id: playing.id, lyric: subtitleList[0].subtitle.subtitle_body }
             }
         }
 
@@ -39,13 +39,13 @@ export const getLyric = async (playing: Playing): Promise<Lyric> => {
         const ownData = own.data;
         if (ownData != "Not found") {
             console.log("LYRICS FROM OWN API");
-            return { lyric: ownData }
+            return { id: playing.id, lyric: ownData }
         }
 
 
         throw 'Cannot get lyric for playing song';
     } catch (e) {
-        return { exception: { code: 404, message: 'Cannot get lyric for playing song' } };
+        return { id: playing.id, exception: { code: 404, message: 'Cannot get lyric for playing song' } };
     }
 }
 
@@ -64,18 +64,18 @@ const fetchNetease = async (playing: Playing): Promise<Lyric> => {
     const items = searchResults.data.result.songs;
 
     if (!items || !items.length) {
-        return { exception: { code: 404, message: "Cannot find track" } };
+        return { id: playing.id, exception: { code: 404, message: "Cannot find track" } };
     }
 
     const album = LyricUtils.capitalize(playing.albumName!);
     const itemId = items.findIndex((val: any) => LyricUtils.capitalize(val.album.name) === album);
-    if (itemId === -1) return { exception: { code: 404, message: "Cannot find track" } };
+    if (itemId === -1) return { id: playing.id, exception: { code: 404, message: "Cannot find track" } };
 
     const meta = await axios.get(lyricURL + items[itemId].id, { headers: requestHeader });
     let lyricStr = meta.data.lrc;
 
     if (!lyricStr || !lyricStr.lyric) {
-        return { exception: { code: 404, message: "No lyrics" } };
+        return { id: playing.id, exception: { code: 404, message: "No lyrics" } };
     }
 
     lyricStr = lyricStr.lyric;
@@ -132,14 +132,14 @@ const fetchNetease = async (playing: Playing): Promise<Lyric> => {
         .filter(Boolean);
 
     if (noLyrics) {
-        return { exception: { code: 404, message: "No lyrics" } };
+        return { id: playing.id, exception: { code: 404, message: "No lyrics" } };
 
     }
     if (!lyrics.length) {
-        return { exception: { code: 404, message: "No synced lyrics" } };
+        return { id: playing.id, exception: { code: 404, message: "No synced lyrics" } };
     }
 
-    return { lyric: lyrics.join("\n") };
+    return { id: playing.id, lyric: lyrics.join("\n") };
 }
 
 const LyricUtils = {

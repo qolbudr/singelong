@@ -6,6 +6,7 @@ import * as spotify from './utils/spotify';
 import * as lyric from './utils/lyric';
 import { Auth } from './types/auth';
 import { Playing } from './types/playing';
+import { Lyric } from './types/lyric';
 
 let extensionContext: vscode.ExtensionContext;
 let provider: SingeLongViewProvider;
@@ -102,33 +103,38 @@ const listener = async () => {
 		auth = await requestAccessToken()
 		let lyricData;
 		let lyricCoolDown = extensionContext.globalState.get<number>('cooldown') || 0;
+		let lyricState = extensionContext.globalState.get<Lyric>('lyric');
 		const playing = await spotify.getNowPlaying(auth.accessToken!);
 		const playingState = extensionContext.globalState.get<Playing>('playing');
-		const lyricState = extensionContext.globalState.get<string>('lyric');
 		const timestamp = Date.now();
 
 		if (playing.exception) {
 			return provider.view?.webview.postMessage({ 'command': 'error', 'message': playing.exception.message });
 		}
 
-		const hasRetrieveLyric = (playingState?.id == playing.id && lyricState != null)
+		const retrieveLyrics = (playingState?.id != playing.id && lyricState?.id != playing.id)
 
-		if (!hasRetrieveLyric && timestamp >= lyricCoolDown) {
+		if (retrieveLyrics && timestamp >= lyricCoolDown) {
 			extensionContext.globalState.update('cooldown', Date.now() + 5000);
 			lyricData = await lyric.getLyric(playing);
-
+			
+			extensionContext.globalState.update('lyric', lyricData);
+			lyricState = lyricData;
+			
 			if (lyricData.exception) {
 				return provider.view?.webview.postMessage({ 'command': 'error', 'message': lyricData.exception.message });
 			}
+		}
 
-			extensionContext.globalState.update('lyric', lyricData.lyric || '');
+		if (lyricState?.exception) {
+			return provider.view?.webview.postMessage({ 'command': 'error', 'message': lyricState?.exception.message });
 		}
 
 		extensionContext.globalState.update('playing', playing);
 		provider.view?.webview.postMessage({
 			'command': 'updatePlayer',
 			'content': {
-				'lyrics': lyricData?.lyric || lyricState,
+				'lyrics': lyricData?.lyric || lyricState?.lyric,
 				'milliseconds': playing.currentProgress
 			}
 		})
