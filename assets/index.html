@@ -4,8 +4,6 @@
 <head>
     <style>
         :root {
-            --bg-color: background-color: #7f5a83;
-            background-image: linear-gradient(315deg, #7f5a83 0%, #0d324d 74%);
             --menu-color: #00000045;
             --lyrics-color: white;
             --font-family: "Montserrat", sans-serif;
@@ -17,7 +15,7 @@
             padding: 0;
             font-family: var(--font-family);
             overflow: hidden;
-            background: var(--bg-color);
+            background: #212121;
         }
 
         #music-player {
@@ -26,8 +24,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg-color);
             color: white;
+            backdrop-filter: blur(64px);
+        }
+
+        #error {
+            padding: 0 2rem 0 2rem;
         }
 
         #lyrics-content {
@@ -56,16 +58,31 @@
             margin: 10px;
             font-size: 2em;
         }
+
+        #particles-js {
+            margin: 0;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: 0;
+        }
     </style>
 </head>
 
 <body>
+    <div id="particles-js"></div>
     <div id="music-player">
+        <div id="error">
+            <h2 class="text-light" style="margin: 0px">Hmmmm</h2>
+            <h4 class="text-dark" id="message" style="opacity: 0.5"></h4>
+        </div>
         <div id="lyrics">
             <div id="lyrics-content">
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script type="text/javascript">
         function extractAndConvertToMilliseconds(text) {
             // Cari pola waktu dalam format [MM:SS.MS] di dalam teks
@@ -119,22 +136,143 @@
                 }
             })
 
-            document.getElementById('lyrics-content').scrollTo({top: document.getElementById(found).offsetTop - (document.getElementById('lyrics-content').clientHeight / 2)})
+            document.getElementById('lyrics-content').scrollTo({ top: document.getElementById(found).offsetTop - (document.getElementById('lyrics-content').clientHeight / 2) })
         }
 
 
         window.addEventListener(
             "message",
             (event) => {
-                if (event.data.command == 'getToken') {
-                    document.getElementById('lyrics-content').innerHTML = '<h2 id="0" class="text-light">Authorize First!</h2>';
+                if (event.data.command == 'error') {
+                    document.getElementById('lyrics').style.display = 'none';
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('message').innerText = event.data.message;
                 } else {
+                    document.getElementById('lyrics').style.display = 'block';
+                    document.getElementById('error').style.display = 'none';
                     playLyrics(event.data.content.lyrics, event.data.content.milliseconds);
                 }
             },
             false,
         );
 
+
+        const partJson = {
+            "particles": {
+                "number": {
+                    "value": 5,
+                    "density": {
+                        "enable": true,
+                        "value_area": 2000
+                    }
+                },
+                "color": {
+                    "value": "#1DB954",
+                    "opacity": 0.3
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000"
+                    },
+                    "polygon": {
+                        "nb_sides": 6
+                    },
+                    "image": {
+                        "src": "img/github.svg",
+                        "width": 100,
+                        "height": 100
+                    }
+                },
+                "opacity": {
+                    "value": 0.3,
+                    "random": false,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 363.0079151508454,
+                    "random": true,
+                    "anim": {
+                        "enable": true,
+                        "speed": 10,
+                        "size_min": 40,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": false,
+                    "distance": 200,
+                    "color": "#ffffff",
+                    "opacity": 1,
+                    "width": 2
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 8,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": false,
+                        "mode": "grab"
+                    },
+                    "onclick": {
+                        "enable": false,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 400,
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 400,
+                        "size": 40,
+                        "duration": 2,
+                        "opacity": 8,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 200,
+                        "duration": 0.4
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    },
+                    "remove": {
+                        "particles_nb": 2
+                    }
+                }
+            },
+            "retina_detect": true
+        }
+
+        var jsonUri = "data:text/plain;base64," + window.btoa(JSON.stringify(partJson));
+        particlesJS.load('particles-js', jsonUri, function () {
+            console.log('callback - particles-js config loaded');
+        });
     </script>
 </body>
 
