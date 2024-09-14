@@ -7,13 +7,7 @@
 ---
 
 <p align="center">
-  <img src="./misc/screenshots/1.jpg" width="30%" />
-  <img src="./misc/screenshots/2.jpg" width="30%" />
-  <img src="./misc/screenshots/3.jpg" width="30%" />
-
-  <img src="./misc/screenshots/4.jpg" width="30%" />
-  <img src="./misc/screenshots/5.jpg" width="30%" />
-  <img src="./misc/screenshots/6.jpg" width="30%" />
+  <img src="./assets/demo.gif" width="100%" />
 </p>
 
 ## Features
