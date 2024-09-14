@@ -4,7 +4,7 @@
   "description": "VSCode extension to singelong (read: sing along) played music connected with your spotify",
   "version": "1.0.0",
   "engines": {
-    "vscode": "1.78.1"
+    "vscode": "^1.78.1"
   },
   "categories": [
     "Other"
@@ -63,7 +63,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.7",
     "@types/node": "20.x",
-    "@types/vscode": "1.78.1",
+    "@types/vscode": "^1.78.1",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
     "@typescript-eslint/parser": "^8.3.0",
     "@vscode/test-cli": "^0.0.10",
